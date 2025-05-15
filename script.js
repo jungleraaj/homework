@@ -11,8 +11,6 @@ const baseImage = document.getElementById('base-image'); // Reference to the hid
 const textColorPicker = document.getElementById('text-color-picker'); // Reference to the color input
 
 const schoolName = "ELS School System";
-// Subjects are read from checkboxes, but keeping an array for reference might be useful
-// const subjects = ['Math', 'Science', 'English', 'Urdu', 'Computer'];
 
 // --- Dynamic Input Field Creation ---
 // Listen for changes in the subject selection area (checkbox clicks)
@@ -47,6 +45,11 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
     let line = ''; // Start with an empty line
     let currentY = y; // Starting Y position for drawing
 
+    // Handle empty or whitespace-only text
+    if (!text.trim()) {
+        return y; // Return the starting Y if no text
+    }
+
     for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' '; // Add the next word to the current line
         const metrics = context.measureText(testLine); // Measure the width of this potential line
@@ -54,7 +57,7 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
 
         // If the test line is wider than the max width AND it's not the very first word (to avoid infinite loop on long single words)
         if (testWidth > maxWidth && n > 0) {
-            context.fillText(line, x, currentY); // Draw the current line (which fits)
+            context.fillText(line.trim(), x, currentY); // Draw the current line (trim whitespace at the end)
             line = words[n] + ' '; // Start a new line with the current word
             currentY += lineHeight; // Move down for the next line
         } else {
@@ -62,11 +65,15 @@ function wrapText(context, text, x, y, maxWidth, lineHeight) {
         }
     }
     // Draw the last line (or the only line if no wrapping occurred)
-    context.fillText(line, x, currentY);
+    if (line.trim().length > 0) { // Ensure there's actual text to draw on the last line
+        context.fillText(line.trim(), x, currentY);
+    }
+
 
     // Return the Y position *after* drawing the last line.
     // This helps in positioning the content that follows.
-    return currentY;
+    // Add lineHeight because currentY is the baseline of the last line drawn.
+    return currentY + lineHeight;
 }
 
 
@@ -82,6 +89,7 @@ submitButton.addEventListener('click', () => {
     }
 
     // Collect homework text for selected subjects
+    let hasHomeworkText = false;
     selectedSubjects.forEach(checkbox => {
         const subject = checkbox.value;
         const inputId = `homework-${subject.toLowerCase().replace(/\s+/g, '-')}`;
@@ -89,11 +97,12 @@ submitButton.addEventListener('click', () => {
         // Check if the textarea exists and has text
         if (textarea && textarea.value.trim() !== '') {
             homeworkData[subject] = textarea.value.trim(); // Store the trimmed text
+            hasHomeworkText = true; // Mark that at least one subject has text
         }
     });
 
     // Check if any homework was actually entered for selected subjects
-    if (Object.keys(homeworkData).length === 0) {
+    if (!hasHomeworkText) {
         alert('Please enter some homework text for the selected subjects.');
         return;
     }
@@ -114,24 +123,36 @@ submitButton.addEventListener('click', () => {
     homeworkCanvas.height = baseImage.naturalHeight;
 
     // --- Draw the base image ---
-    ctx.drawImage(baseImage, 0, 0);
+    ctx.drawImage(baseImage, 0, 0, homeworkCanvas.width, homeworkCanvas.height); // Draw base image covering the whole canvas
 
     // Get the selected text color
     const textColor = textColorPicker.value;
     ctx.fillStyle = textColor; // Set the drawing color for all text
 
+    ctx.textBaseline = 'top'; // Set text baseline to top for easier positioning
+
     // --- Draw School Name ---
     ctx.font = 'Bold 40px Arial'; // Adjust font size and style as needed
     ctx.textAlign = 'center'; // Align text to the center horizontally
-    const schoolNameY = 80; // <<<< ADJUST THIS Y COORDINATE based on your base image layout
-    ctx.fillText(schoolName, homeworkCanvas.width / 2, schoolNameY); // Draw school name at the center top
+    // *** ADJUST THIS Y COORDINATE *** based on your base image layout (likely below the picture, on the right side)
+    const schoolNameY = 80; // Example: 80px from the top
+    // To center text *within the available width on the right*, you need to calculate the center X of that area.
+    // Let's assume the text area on the right starts at X = startX and ends at the canvas width minus a margin.
+    const assumedTextAreaStartX = 500; // <<<< ADJUST based on where text area starts on your image
+    const assumedTextAreaWidth = homeworkCanvas.width - assumedTextAreaStartX - 50; // <<<< ADJUST available width on the right, minus right margin
+    const schoolNameX = assumedTextAreaStartX + assumedTextAreaWidth / 2; // Center X for the right area
+
+    ctx.fillText(schoolName, schoolNameX, schoolNameY); // Draw school name
 
     // --- Draw Homework Details ---
-    let currentY = 200; // <<<< ADJUST THIS STARTING Y POSITION based on your base image layout
-    const lineHeight = 30; // Space between lines of text drawn by wrapText
-    const subjectSpacing = 40; // Vertical space between different subject entries
-    const startX = 80; // <<<< ADJUST THIS STARTING X POSITION for text on your base image
-    const homeworkAreaWidth = homeworkCanvas.width - (startX * 2); // Calculate available width for homework text
+    // *** ADJUST THIS STARTING Y POSITION *** based on where the homework list should begin (below school name)
+    let currentY = schoolNameY + 60; // Example: 60px below school name (adjust spacing)
+    const lineHeight = 25; // Space between lines of text drawn by wrapText (adjust based on font size)
+    const subjectSpacing = 35; // Vertical space between different subject entries (adjust)
+    // *** ADJUST THIS STARTING X POSITION *** for the left edge of homework text on your base image (right side area)
+    const startX = 500; // Example: 500px from the left edge of the canvas
+    // *** ADJUST THIS WIDTH *** The maximum width available for homework text wrapping on the right side
+    const homeworkAreaWidth = homeworkCanvas.width - startX - 50; // Example: Canvas width minus startX and a right margin (50px)
 
     ctx.textAlign = 'left'; // Set text alignment back to left for subject/homework details
 
@@ -139,24 +160,33 @@ submitButton.addEventListener('click', () => {
     for (const subject in homeworkData) {
         if (homeworkData[subject]) {
             // Draw Subject Name
-            ctx.font = 'Bold 22px Arial'; // Adjust subject font size and style
+            ctx.font = 'Bold 20px Arial'; // Adjust subject font size and style
+             // Use ctx.textBaseline = 'top'; for easier alignment
+
+            // Calculate the Y position for the subject name.
+            // We need to ensure there's enough space from the previous entry.
+            // currentY is already updated to be the start of the current block.
             ctx.fillText(`${subject}:`, startX, currentY); // Draw subject name
 
             // Calculate where the homework text should start (next to the subject name)
             const subjectNameWidth = ctx.measureText(`${subject}:`).width;
-            const homeworkTextStartX = startX + subjectNameWidth + 15; // <<<< ADJUST space after subject name
+            // *** ADJUST space after subject name. Add to startX + subjectNameWidth.
+            const homeworkTextStartX = startX + subjectNameWidth + 15; // Example: 15px space
 
-            // Calculate the width available for the homework text itself
-            const availableWidthForHomeworkText = homeworkCanvas.width - homeworkTextStartX - startX; // Assuming right margin is similar to left
+             // Calculate the width available for the homework text itself within the homeworkAreaWidth
+             // Subtract the space taken by the subject name and the gap after it.
+             const availableWidthForHomeworkText = homeworkAreaWidth - (homeworkTextStartX - startX);
+
 
             ctx.font = '18px Arial'; // Adjust homework text font size and style
 
             // Use the wrapText function to draw the homework text
-            // The wrapText function returns the Y position after the last line was drawn
+            // The wrapText function draws the text starting at (homeworkTextStartX, currentY)
+            // and returns the Y position *after* the last line was drawn, including its lineHeight.
             const finalYAfterHomework = wrapText(ctx, homeworkData[subject], homeworkTextStartX, currentY, availableWidthForHomeworkText, lineHeight);
 
             // Update the currentY for the next subject entry.
-            // We need to add vertical space based on how much text was drawn for the current subject.
+            // We set it to the end position of the current homework text block plus the subject spacing.
             currentY = finalYAfterHomework + subjectSpacing; // Move down for the next subject block
         }
     }
@@ -170,8 +200,8 @@ submitButton.addEventListener('click', () => {
 
 // --- Share Button Logic ---
 shareButton.addEventListener('click', () => {
-    // Check if Web Share API is available in the browser
-    if (navigator.share && homeworkCanvas.toBlob) { // Also check for toBlob support
+    // Check if Web Share API is available in the browser and canvas.toBlob is supported
+    if (navigator.share && homeworkCanvas.toBlob) {
         // Convert canvas content to a Blob (binary data)
         homeworkCanvas.toBlob((blob) => {
             // Create a File object from the Blob
@@ -203,8 +233,7 @@ shareButton.addEventListener('click', () => {
 // This event listener fires when the image is successfully loaded.
 baseImage.onload = () => {
     console.log("Base template image loaded successfully.");
-    // The submit button is enabled by default in HTML, but if you wanted
-    // to disable it until the image loads, you would enable it here.
+    // If you disabled the submit button initially, you would enable it here.
     // submitButton.disabled = false;
 };
 
@@ -228,6 +257,4 @@ if (baseImage.complete) {
 // like maybe update a small swatch. It does NOT redraw the canvas.
 textColorPicker.addEventListener('input', () => {
     console.log("Text color selected:", textColorPicker.value);
-    // If you wanted a *very* basic preview, you could change the color
-    // of a sample text block here, but not the canvas image.
 });
