@@ -1,0 +1,124 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.container {
+    max-width: 700px;
+    margin: 0 auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+#subject-selection {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+#subject-selection label {
+    margin-right: 15px;
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+#homework-inputs {
+    margin-bottom: 20px;
+}
+
+.subject-homework-input {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.subject-homework-input label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.subject-homework-input textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding in element's total width */
+    min-height: 60px; /* Give some initial height */
+}
+
+#submit-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#submit-btn:hover {
+    background-color: #4cae4c;
+}
+
+#output-area {
+    margin-top: 30px;
+    text-align: center;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+#generated-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+    display: none; /* Hide initially */
+}
+
+#share-btn {
+     /* Styles similar to submit-btn, maybe a different color */
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #5bc0de; /* Example share color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+#share-btn:hover {
+    background-color: #31b0d5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    #subject-selection label {
+        display: block;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}

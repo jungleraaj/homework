@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELS School Homework Share</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>ELS School System</h1>
+        <h2>Select Subjects</h2>
+
+        <div id="subject-selection">
+            <label><input type="checkbox" value="Math"> Math</label><br>
+            <label><input type="checkbox" value="Science"> Science</label><br>
+            <label><input type="checkbox" value="English"> English</label><br>
+            <label><input type="checkbox" value="Urdu"> Urdu</label><br>
+            <label><input type="checkbox" value="Computer"> Computer</label><br>
+            </div>
+
+        <div id="homework-inputs">
+            </div>
+
+        <button id="submit-btn">Generate Homework Image</button>
+
+        <div id="output-area">
+            <h2>Generated Homework</h2>
+            <img id="generated-image" src="" alt="Generated Homework Image">
+            <button id="share-btn" style="display: none;">Share Homework</button>
+        </div>
+
+        <canvas id="homework-canvas" style="display: none;"></canvas>
+
+        <img id="base-image" src="img/base_homework_template.png" style="display: none;" alt="Base Template">
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
